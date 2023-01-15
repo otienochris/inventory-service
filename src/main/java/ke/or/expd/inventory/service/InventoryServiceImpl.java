@@ -1,12 +1,12 @@
 package ke.or.expd.inventory.service;
 
 import jakarta.transaction.Transactional;
-import ke.or.expd.inventory.model.entity.Inventory;
+import ke.or.expd.inventory.model.dto.InventoryInquiryResponse;
 import ke.or.expd.inventory.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @Transactional
@@ -15,8 +15,12 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
 
     @Override
-
-    public boolean isInStock(String skuCode) {
-        return inventoryRepository.findBySkuCode(skuCode).isPresent();
+    public List<InventoryInquiryResponse> isInStock(List<String> skuCodes) {
+        return inventoryRepository.findBySkuCodeIn(skuCodes).stream()
+                .map(inventory -> InventoryInquiryResponse.builder()
+                        .skuCode(inventory.getSkuCode())
+                        .isInStock(inventory.getQuantity() > 0)
+                        .build())
+                .toList();
     }
 }
